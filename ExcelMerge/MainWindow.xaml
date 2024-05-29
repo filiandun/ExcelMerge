@@ -1,19 +1,19 @@
-﻿<Window x:Class="ExcelMerge.MainWindow"
+﻿<mah:MetroWindow x:Class="ExcelMerge.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:ExcelMerge"
         mc:Ignorable="d"
-        Title="Excel Merger" Height="420" Width="700" WindowStartupLocation="CenterScreen">
+        Title="Excel Merger" Height="910" Width="900" WindowStartupLocation="CenterScreen" GlowBrush="{DynamicResource MahApps.Brushes.Accent}" Closed="MainWindow_Closed">
 
-    <Grid Margin="20px">
+    <Grid Margin="10px">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="1.2*"/>
+            <RowDefinition MinHeight="150"/>
+            <RowDefinition Height="0.7*"/>
         </Grid.RowDefinitions>
         
         <Grid.ColumnDefinitions>
@@ -21,52 +21,130 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.Column="0" Margin="10">
-            <Button x:Name="btnOpenFile1" Content="Выбрать первую таблицу" Click="BtnOpenFile_Click"/>
-            <TextBlock x:Name="txtFile1" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
-        </StackPanel>
-        
-        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10">
-            <Button x:Name="btnOpenFile2" Content="Выбрать вторую таблицу" Click="BtnOpenFile_Click"/>
-            <TextBlock x:Name="txtFile2" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
-        </StackPanel>
+        <GroupBox Header="Первая таблица" Grid.Row="0" Grid.Column="0" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}" Margin="5">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.8*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1.3*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" Margin="10">
+                    <Button x:Name="btnOpenFile1" Tag="1" Content="Выбрать первый файл Excel" Click="BtnOpenFile_Click"/>
+                    <TextBlock x:Name="txtFile1" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
+                </StackPanel>
 
-        
-        <StackPanel Grid.Row="1" Grid.Column="0" Margin="10">
-            <TextBlock Text="Выберите лист из первой таблицы"/>
-            <ComboBox x:Name="cmbSheet1" SelectionChanged="CmbSheet_SelectionChanged"/>
-        </StackPanel>
-        
-        <StackPanel Grid.Row="1" Grid.Column="1" Margin="10">
-            <TextBlock Text="Выберите лист из второй таблицы"/>
-            <ComboBox x:Name="cmbSheet2" SelectionChanged="CmbSheet_SelectionChanged"/>
-        </StackPanel>
+                <GroupBox Header="Выберите лист из первого файла" Grid.Row="1" Margin="5" Padding="5" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <ComboBox x:Name="cmbSheet1" Tag="1" SelectionChanged="CmbSheet_SelectionChanged"/>
+                        <TextBlock x:Name="txtRowColumnCountSheet1" Text="Лист не выбран" Margin="5"/>
+                    </StackPanel>
+                </GroupBox>
 
-        
-        <StackPanel Grid.Row="2" Grid.Column="0" Margin="10">
-            <TextBlock Text="Выберите столбец для сравнения из первой таблицы"/>
-            <ComboBox x:Name="cmbColumn1"/>
-            <TextBlock Text="Выберите столбец для копирования из первой таблицы"/>
-            <ComboBox x:Name="cmbCopyColumn1"/>
-        </StackPanel>
-        
-        <StackPanel Grid.Row="2" Grid.Column="1" Margin="10">
-            <TextBlock Text="Выберите столбец для сравнения из второй таблицы"/>
-            <ComboBox x:Name="cmbColumn2"/>
-            <TextBlock Text="Выберите столбец для вставки во второй таблице"/>
-            <ComboBox x:Name="cmbPasteColumn2"/>
-        </StackPanel>
+                <GroupBox Header="Введите номер строки, с которой будут считаны названия столбцов" Grid.Row="2" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <mah:NumericUpDown x:Name="nupRowWithColumnNames1" Tag="1" ValueChanged="NupRowWithColumnNames_ValueChanged" Value="1" Minimum="1" Margin="0, 0, 0, 5"/>
+                        <Button x:Name="btnCreateColumnNames" Tag="1" Content="Или создать наименования столбцов на первой строке (1, 2 .. n)" Click="BtnCreateColumnNames_Click"/>
+                    </StackPanel>
+                </GroupBox>
 
-        <StackPanel Grid.Row="3" Grid.Column="0" Margin="10" Grid.ColumnSpan="2">
-            <CheckBox x:Name="cbIngoreCase" Content="Игнорировать регистр"/>
-            <CheckBox x:Name="cbIngoreSpace" Content="Игнорировать пробелы до и после содержимого ячейки (__содержимое__)"/>
-            <CheckBox x:Name="cbYellowBackground" Content="Окрасить фон копируемых ячеек в жёлтый"/>
-        </StackPanel>
+                <GroupBox Header="Выберите столбец для сравнения из листа первого файла" Grid.Row="3" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <ComboBox x:Name="cmbColumn1" Tag="1" DropDownOpened="CmbColumn_DropDownOpened"/>
+                        
+                        <StackPanel Margin="10">
+                            <CheckBox x:Name="cbIgnoreEmptyCells" Content="Пропускать пустые ячейки при сравнении" IsChecked="True" Margin="0 0 0 5"/>
+                            <CheckBox x:Name="cbYellowBackground" Content="Подкрасить пустые ячейки в жёлтый" IsEnabled="False"/>
+                            <!--<mah:ColorPicker/>-->
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Выберите столбец для вставки из листа первого файла" Grid.Row="4" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <ComboBox x:Name="cmbPasteColumn1"/>
+
+                        <StackPanel Margin="10">
+                            <CheckBox x:Name="cbGreenBackground" Content="Подкрасить вставленные ячейки в зелёный" IsEnabled="False"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
 
 
+        <GroupBox Header="Вторая таблица" Grid.Row="0" Grid.Column="1" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}" Margin="5">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.8*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1.3*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                
+                <StackPanel Grid.Row="0" Margin="10">
+                    <Button x:Name="btnOpenFile2" Tag="2" Content="Выбрать второй файл Excel" Click="BtnOpenFile_Click"/>
+                    <TextBlock x:Name="txtFile2" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
+                </StackPanel>
 
-        <StackPanel Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="10">
-            <Button x:Name="btnCopy" Content="Копировать" Click="btnCopy_Click"/>
+                <GroupBox Header="Выберите лист из второго файла" Grid.Row="1" Margin="5" Padding="5" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <ComboBox x:Name="cmbSheet2" Tag="2" SelectionChanged="CmbSheet_SelectionChanged"/>
+
+                        <TextBlock x:Name="txtRowColumnCountSheet2" Text="Лист не выбран" Margin="5"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Введите номер строки, с которой будут считаны названия столбцов" Grid.Row="2" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <mah:NumericUpDown x:Name="nupRowWithColumnNames2" Tag="1" ValueChanged="NupRowWithColumnNames_ValueChanged" Value="1" Minimum="1" Margin="0, 0, 0, 5"/>
+                        <Button x:Name="btnCreateColumnNames2" Tag="2" Content="Или создать наименования столбцов на первой строке (1, 2 .. n)" Click="BtnCreateColumnNames_Click"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Выберите столбец для сравнения из листа второго файла" Grid.Row="3" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <ComboBox x:Name="cmbColumn2" Tag="2" DropDownOpened="CmbColumn_DropDownOpened"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Выберите столбец для копирования из листа второго файла" Grid.Row="4" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
+                    <StackPanel>
+                        <ComboBox x:Name="cmbCopyColumn2"/>
+
+                        <StackPanel Margin="10">
+                            <CheckBox x:Name="cbCopyCellsFormat" Content="Скопировать форматирование ячеек" IsEnabled="False"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Padding="5" Header="Общие настройки" Style="{DynamicResource MahApps.Styles.GroupBox.VisualStudio}">
+            <StackPanel>
+                <CheckBox x:Name="cbIngoreCase" Content='Игнорировать регистр содержимого ячеек ("содержимое" равно "СоДерЖиМоЕ")' Margin="3"/>
+                <CheckBox x:Name="cbIngoreSpace" Content='Игнорировать пробелы до и после содержимого ячейки ("__содержимое__" равно "содержимое")' IsChecked="true" Margin="3"/>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Row="2" Grid.ColumnSpan="2" Margin="5" Header="Прогресс">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <RichTextBox x:Name="rtbProgress" Grid.Row="0" IsReadOnly="True" BorderThickness="0" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto"/>
+
+                <ProgressBar x:Name="progressBar" Grid.Row="1" Value="0" Margin="0 2"/>
+            </Grid>
+        </GroupBox>
+
+        <StackPanel Grid.Row="3" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Margin="5">
+            <Button  Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" x:Name="btnCopy" Content="Начать" Click="BtnCopy_Click" Background="#FF3393DF" Foreground="White" Padding="10"/>
         </StackPanel>
     </Grid>
-</Window>
+</mah:MetroWindow>
