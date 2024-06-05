@@ -56,7 +56,7 @@
                         
                         <StackPanel Margin="10">
                             <CheckBox x:Name="cbIgnoreEmptyCells" Content="Пропускать пустые ячейки при сравнении" IsChecked="True" Margin="0 0 0 5"/>
-                            <CheckBox x:Name="cbYellowBackground" Content="Подкрасить пустые ячейки в жёлтый" IsEnabled="False"/>
+                            <CheckBox x:Name="cbYellowBackground" Content="Подкрасить пустые ячейки в жёлтый"/>
                             <!--<mah:ColorPicker/>-->
                         </StackPanel>
                     </StackPanel>
@@ -67,7 +67,7 @@
                         <ComboBox x:Name="cmbPasteColumn1"/>
 
                         <StackPanel Margin="10">
-                            <CheckBox x:Name="cbGreenBackground" Content="Подкрасить вставленные ячейки в зелёный" IsEnabled="False"/>
+                            <CheckBox x:Name="cbGreenBackground" Content="Подкрасить вставленные ячейки в зелёный"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
@@ -116,7 +116,7 @@
                         <ComboBox x:Name="cmbCopyColumn2"/>
 
                         <StackPanel Margin="10">
-                            <CheckBox x:Name="cbCopyCellsFormat" Content="Скопировать форматирование ячеек" IsEnabled="False"/>
+                            <CheckBox x:Name="cbCopyCellsFormat" Content="Скопировать форматирование ячеек"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>

@@ -11,8 +11,6 @@ using ICSharpCode.SharpZipLib.Core;
 
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
-using System.Formats.Tar;
-using System.Windows.Input;
 
 
 namespace ExcelMerge
@@ -177,7 +175,7 @@ namespace ExcelMerge
 
             try
             {
-                double? rowNum = nupRowWithColumnNames.Value;
+                double? rowNum = nupRowWithColumnNames.Value - 1;
 				columnNames = excelHelper.GetColumnNames(rowNum);
             }
             catch (NullReferenceException)
@@ -222,6 +220,10 @@ namespace ExcelMerge
                     (bool) this.cbIngoreSpace.IsChecked);
 
                 await this.comparisonHelper.ComparingAsync(this.excelManager1, this.excelManager2, column1, column2, columnCopy, columnPaste, copyOptions);
+            }
+            catch (IOException)
+            {
+                await this.ShowMessageAsync("Внимание!", $"Файл уже где-то открыт. Закройте его и попробуйте ещё раз.");
             }
             catch (Exception ex)
             {

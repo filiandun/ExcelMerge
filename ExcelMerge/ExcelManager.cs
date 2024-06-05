@@ -13,11 +13,10 @@ namespace ExcelMerge
     public class ExcelManager
     {
         private IWorkbook? workBook;
-        public ISheet? Sheet { get; private set; }
-        public IRow? Row { get; private set; }
-
-
         private FileInfo fileInfo;
+
+        public ISheet? Sheet { get; private set; }
+
 
         public void OpenExcelFile(FileInfo fileInfo)
         {
@@ -106,7 +105,7 @@ namespace ExcelMerge
             }
         }
 
-        public List<string> GetColumnNames(double? rowNum = 0)
+        public List<string> GetColumnNames(double? rowNum)
         {
             IRow row = this.Sheet.GetRow((int) rowNum);
             if (row == null)
@@ -114,63 +113,58 @@ namespace ExcelMerge
                 throw new NullReferenceException();
             }
 
-            int numberOfColumns = row.PhysicalNumberOfCells; // получение кол-ва НЕ ПУСТЫХ ячеек в строке // cells.count - для получения кол-ва всех ячеек
-
-            List<string> columnNames = new List<string>(numberOfColumns);
-            for (int i = 0; i < numberOfColumns; i++)
+            int columnCount = row.LastCellNum;
+            if (columnCount < 0)
             {
-                columnNames.Add(row.Cells[i].ToString());
+                throw new NullReferenceException();
+            }
+
+            List<string> columnNames = new List<string>(columnCount);
+            for (int i = 0; i < columnCount; i++)
+            {
+                ICell cell = row.GetCell(i, MissingCellPolicy.RETURN_BLANK_AS_NULL);
+                string columnName = $"[{i + 1}] " + (cell != null ? cell.ToString() : "Пустота");
+                columnNames.Add(columnName);
             }
 
             return columnNames;
         }
 
 
-        public void SetCellStyle(ICell targetCell, IndexedColors indexedColor)
+        public void SetCellStyle(ICell pasteCell, IndexedColors indexedColor)
         {
-            ICellStyle newCellStyle = this.workBook.CreateCellStyle();
+            //ICellStyle newCellStyle = this.workBook.CreateCellStyle();
+            ICellStyle newCellStyle = pasteCell.Sheet.Workbook.CreateCellStyle();
+
             newCellStyle.FillForegroundColor = indexedColor.Index;
             newCellStyle.FillPattern = FillPattern.SolidForeground;
 
-            targetCell.CellStyle = newCellStyle;
+            pasteCell.CellStyle = newCellStyle;
         }
 
         public void CopyCellStyle(ICell pasteCell, ICell copyCell)
         {
-			ICellStyle pasteStyle = pasteCell.CellStyle;
-			ICellStyle newCellStyle = copyCell.Sheet.Workbook.CreateCellStyle();
+            ICellStyle copyStyle = copyCell.CellStyle;  // Получаем стиль из ячейки, откуда копируем
+            ICellStyle newCellStyle = pasteCell.Sheet.Workbook.CreateCellStyle();
 
-			// Копирование свойств стиля
-			newCellStyle.Alignment = pasteStyle.Alignment;
-			newCellStyle.BorderBottom = pasteStyle.BorderBottom;
-			newCellStyle.BorderLeft = pasteStyle.BorderLeft;
-			newCellStyle.BorderRight = pasteStyle.BorderRight;
-			newCellStyle.BorderTop = pasteStyle.BorderTop;
-			newCellStyle.FillForegroundColor = pasteStyle.FillForegroundColor;
-			newCellStyle.FillPattern = pasteStyle.FillPattern;
-			newCellStyle.FillBackgroundColor = pasteStyle.FillBackgroundColor;
-			newCellStyle.DataFormat = pasteStyle.DataFormat;
-			newCellStyle.IsHidden = pasteStyle.IsHidden;
-			newCellStyle.IsLocked = pasteStyle.IsLocked;
-			newCellStyle.Indention = pasteStyle.Indention;
-			newCellStyle.Rotation = pasteStyle.Rotation;
-			newCellStyle.VerticalAlignment = pasteStyle.VerticalAlignment;
-			newCellStyle.WrapText = pasteStyle.WrapText;
+            // Копирование свойств стиля
+            newCellStyle.CloneStyleFrom(copyStyle);
 
-			// Копирование шрифта
-			IFont sourceFont = pasteCell.Sheet.Workbook.GetFontAt(pasteStyle.FontIndex);
-			IFont newFont = this.workBook.CreateFont();
-			newFont.Boldweight = sourceFont.Boldweight;
-			newFont.Color = sourceFont.Color;
-			newFont.FontHeightInPoints = sourceFont.FontHeightInPoints;
-			newFont.FontName = sourceFont.FontName;
-			newFont.IsItalic = sourceFont.IsItalic;
-			newFont.IsStrikeout = sourceFont.IsStrikeout;
-			newFont.TypeOffset = sourceFont.TypeOffset;
-			newFont.Underline = sourceFont.Underline;
-			newCellStyle.SetFont(newFont);
+            // Копирование шрифта
+            IFont sourceFont = copyCell.Sheet.Workbook.GetFontAt(copyStyle.FontIndex);
+            IFont newFont = pasteCell.Sheet.Workbook.CreateFont();
 
-			copyCell.CellStyle = newCellStyle;
-		}
+            newFont.Boldweight = sourceFont.Boldweight;
+            newFont.Color = sourceFont.Color;
+            newFont.FontHeightInPoints = sourceFont.FontHeightInPoints;
+            newFont.FontName = sourceFont.FontName;
+            newFont.IsItalic = sourceFont.IsItalic;
+            newFont.IsStrikeout = sourceFont.IsStrikeout;
+            newFont.TypeOffset = sourceFont.TypeOffset;
+            newFont.Underline = sourceFont.Underline;
+            newCellStyle.SetFont(newFont);
+
+            pasteCell.CellStyle = newCellStyle;  // Применяем новый стиль к ячейке pasteCell
+        }
     }
 }

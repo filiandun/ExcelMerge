@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows;
 using NPOI.SS.UserModel;
 
 namespace ExcelMerge
@@ -49,9 +49,9 @@ namespace ExcelMerge
                     }
                 }
 
-                this.OnProgressChanged($"Cохранение изменений в файле..", 1);
+                this.OnProgressChanged($"Cохранение изменений в файл..", 1);
                 excelManager1.SaveExcelFile();
-                this.OnProgressChanged($"Cохранения изменений - успешно.", 1);
+                this.OnProgressChanged($"Cохранение изменений - успешно.", 1);
 
                 this.OnProgressChanged($"КОНЕЦ ({DateTime.Now.ToLongTimeString()})", 1);
             });
@@ -83,7 +83,8 @@ namespace ExcelMerge
                 }
                 if (copyOptions.GreenBackground) // copyOptions 1
                 {
-                    excelHelper1.SetCellStyle(cellCopy, IndexedColors.Green);
+                    excelHelper1.SetCellStyle(cellPaste, IndexedColors.Green);
+                    
                 }
                 cellPaste.SetCellValue(cellCopy.StringCellValue);
             }
