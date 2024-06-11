@@ -6,13 +6,13 @@
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:ExcelMerge"
         mc:Ignorable="d"
-        Title="Excel Merger" Height="910" Width="900" WindowStartupLocation="CenterScreen" GlowBrush="{DynamicResource MahApps.Brushes.Accent}" Closed="MainWindow_Closed">
+        Title="Excel Merger" Height="910" Width="920" WindowStartupLocation="CenterScreen" GlowBrush="{DynamicResource MahApps.Brushes.Accent}" Closed="MainWindow_Closed">
 
     <Grid Margin="10px">
         <Grid.RowDefinitions>
             <RowDefinition Height="7*"/>
             <RowDefinition Height="1.2*"/>
-            <RowDefinition MinHeight="150"/>
+            <RowDefinition Height="*" MinHeight="150"/>
             <RowDefinition Height="0.7*"/>
         </Grid.RowDefinitions>
         
@@ -27,7 +27,7 @@
                     <RowDefinition Height="0.8*"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1.3*"/>
+                    <RowDefinition Height="1.4*"/>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
                 
@@ -56,8 +56,8 @@
                         
                         <StackPanel Margin="10">
                             <CheckBox x:Name="cbIgnoreEmptyCells" Content="Пропускать пустые ячейки при сравнении" IsChecked="True" Margin="0 0 0 5"/>
-                            <CheckBox x:Name="cbYellowBackground" Content="Подкрасить пустые ячейки в жёлтый"/>
-                            <!--<mah:ColorPicker/>-->
+                            <CheckBox x:Name="cbYellowBackground" Content="Подкрасить пустые ячейки в жёлтый" Margin="0 0 0 5"/>
+                            <CheckBox x:Name="cbSkipFurtherMatches" Content="Пропускать дальнейшие совпадения после первого найденного" ToolTip="При включении, поиск совпадений прекратится после нахождения первого совпадения для текущей ячейки" Margin="0 0 0 5"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>

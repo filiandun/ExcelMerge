@@ -3,14 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.IO;
 
-using System.Reflection;
-using NPOI.POIFS.Storage;
-using NPOI.OpenXmlFormats.Spreadsheet;
-using NPOI.SS.UserModel;
-using ICSharpCode.SharpZipLib.Core;
-
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using System.Windows.Documents;
 
 
 namespace ExcelMerge
@@ -32,7 +27,7 @@ namespace ExcelMerge
             this.comparisonHelper = new ComparisonHelper();
             this.comparisonHelper.ProgressChanged += ComparsionHelper_ProgressChanged;
 
-            this.ShowMessageAsync("Внимание!", "Перед использованием программы рекомендуется сделать копии файлов, с которыми будете работать!");
+            this.ShowMessageAsync("Внимание!", "Перед использованием программы рекомендуется создать копии файлов, с которыми будете работать!");
         }
 
         private void BtnOpenFile_Click(object sender, RoutedEventArgs e)
@@ -51,12 +46,12 @@ namespace ExcelMerge
                     int fileNum = Convert.ToInt32(btnOpenFile.Tag);
                     if (fileNum == 1)
                     {
-                        this.ResetComponent(this.txtFile1, this.cmbSheet1, this.cmbColumn1, this.cmbPasteColumn1, this.txtRowColumnCountSheet1, this.nupRowWithColumnNames2);
+                        this.ResetAllComponent(this.txtFile1, this.cmbSheet1, this.cmbColumn1, this.cmbPasteColumn1, this.txtRowColumnCountSheet1, this.nupRowWithColumnNames1);
                         this.LoadFile(this.excelManager1, fileInfo, this.txtFile1, this.cmbSheet1);
                     }
                     else if (fileNum == 2)
                     {
-                        this.ResetComponent(this.txtFile2, this.cmbSheet2, this.cmbColumn2, this.cmbCopyColumn2, this.txtRowColumnCountSheet2, this.nupRowWithColumnNames2);
+                        this.ResetAllComponent(this.txtFile2, this.cmbSheet2, this.cmbColumn2, this.cmbCopyColumn2, this.txtRowColumnCountSheet2, this.nupRowWithColumnNames2);
                         this.LoadFile(this.excelManager2, fileInfo, this.txtFile2, this.cmbSheet2);
                     }
                 }
@@ -93,11 +88,13 @@ namespace ExcelMerge
                 if (fileNum == 1)
                 {
                     this.LoadSheetInfo(this.excelManager1, sheetName, this.txtRowColumnCountSheet1);
-                }
-                else if (fileNum == 2)
+					this.ResetColumnsComponent(this.cmbColumn1, cmbPasteColumn1);
+				}
+				else if (fileNum == 2)
                 {
                     this.LoadSheetInfo(this.excelManager2, sheetName, this.txtRowColumnCountSheet2);
-                }
+                    this.ResetColumnsComponent(this.cmbColumn2, cmbCopyColumn2);
+				}
             }
         }
 
@@ -115,6 +112,13 @@ namespace ExcelMerge
             }
         }
 
+		private void NupRowWithColumnNames_ValueChanged(object sender, RoutedEventArgs e)
+		{
+			if (sender is NumericUpDown nupRowWithColumnNames)
+			{
+				nupRowWithColumnNames.Value ??= 1;
+			}
+		}
 
 		private void BtnCreateColumnNames_Click(object sender, RoutedEventArgs e)
         {
@@ -211,19 +215,22 @@ namespace ExcelMerge
                 int columnCopy = this.cmbCopyColumn2.SelectedIndex;
                 int columnPaste = this.cmbPasteColumn1.SelectedIndex;
 
-                ComparsionOptions copyOptions = new ComparsionOptions
-                    ((bool) this.cbIgnoreEmptyCells.IsChecked, 
-                    (bool) this.cbYellowBackground.IsChecked, 
-                    (bool) this.cbGreenBackground.IsChecked, 
-                    (bool) this.cbCopyCellsFormat.IsChecked, 
-                    (bool) this.cbIngoreCase.IsChecked, 
-                    (bool) this.cbIngoreSpace.IsChecked);
+                ComparisonOptions copyOptions = new ComparisonOptions
+                (
+                    (bool) this.cbIgnoreEmptyCells.IsChecked!, 
+                    (bool) this.cbYellowBackground.IsChecked!, 
+                    (bool) this.cbGreenBackground.IsChecked!, 
+                    (bool) this.cbCopyCellsFormat.IsChecked!,
+				    (bool) this.cbSkipFurtherMatches.IsChecked!,
+				    (bool) this.cbIngoreCase.IsChecked!, 
+                    (bool) this.cbIngoreSpace.IsChecked!
+                );
 
                 await this.comparisonHelper.ComparingAsync(this.excelManager1, this.excelManager2, column1, column2, columnCopy, columnPaste, copyOptions);
             }
             catch (IOException)
             {
-                await this.ShowMessageAsync("Внимание!", $"Файл уже где-то открыт. Закройте его и попробуйте ещё раз.");
+                await this.ShowMessageAsync("Внимание!", $"Файл не удалось сохранить, так как он уже где-то открыт. Закройте его и попробуйте ещё раз.");
             }
             catch (Exception ex)
             {
@@ -243,13 +250,17 @@ namespace ExcelMerge
         {
             this.Dispatcher.Invoke(() =>
             {
-                this.rtbProgress.AppendText(e.Message + "\n");
-                this.progressBar.Value = e.Progress * 100;
+                TextRange textRange = new TextRange(this.rtbProgress.Document.ContentEnd, this.rtbProgress.Document.ContentEnd);
+                textRange.Text = e.Message + "\n";
+				textRange.ApplyPropertyValue(TextElement.ForegroundProperty, e.Color);
+				textRange.ApplyPropertyValue(Paragraph.MarginProperty, new Thickness(0));
+
+				this.progressBar.Value = e.Progress * 100;
             });
         }
 
 
-		private void ResetComponent(TextBlock txtFile, ComboBox cmbSheet, ComboBox cmbColumn, ComboBox cmbPasteOrCopyColumn, TextBlock txtRowColumnCountSheet, NumericUpDown nupRowWithColumnNames)
+		private void ResetAllComponent(TextBlock txtFile, ComboBox cmbSheet, ComboBox cmbColumn, ComboBox cmbPasteOrCopyColumn, TextBlock txtRowColumnCountSheet, NumericUpDown nupRowWithColumnNames)
 		{
 			txtFile.Text = "Файл не выбран";
 
@@ -266,24 +277,22 @@ namespace ExcelMerge
 
             this.cbGreenBackground.IsChecked = false;
             this.cbCopyCellsFormat.IsChecked = false;
+            this.cbSkipFurtherMatches.IsChecked = false;
 
             this.cbIngoreCase.IsChecked = false;
             this.cbIngoreSpace.IsChecked = true;
 		}
 
+        private void ResetColumnsComponent(ComboBox cmbColumn, ComboBox cmbPasteOrCopyColumn)
+        {
+			cmbColumn.ItemsSource = null;
+			cmbPasteOrCopyColumn.ItemsSource = null;
+		}
 
 		private void MainWindow_Closed(object sender, EventArgs e)
         {
             this.excelManager1.Close();
             this.excelManager2.Close();
-		}
-
-		private void NupRowWithColumnNames_ValueChanged(object sender, RoutedEventArgs e)
-		{
-			if (sender is NumericUpDown nupRowWithColumnNames)
-			{
-				nupRowWithColumnNames.Value ??= 1;
-			}
 		}
 	}
 }

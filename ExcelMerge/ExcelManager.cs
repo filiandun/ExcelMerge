@@ -133,7 +133,6 @@ namespace ExcelMerge
 
         public void SetCellStyle(ICell pasteCell, IndexedColors indexedColor)
         {
-            //ICellStyle newCellStyle = this.workBook.CreateCellStyle();
             ICellStyle newCellStyle = pasteCell.Sheet.Workbook.CreateCellStyle();
 
             newCellStyle.FillForegroundColor = indexedColor.Index;
@@ -144,27 +143,15 @@ namespace ExcelMerge
 
         public void CopyCellStyle(ICell pasteCell, ICell copyCell)
         {
-            ICellStyle copyStyle = copyCell.CellStyle;  // Получаем стиль из ячейки, откуда копируем
+            ICellStyle copyStyle = copyCell.CellStyle;
             ICellStyle newCellStyle = pasteCell.Sheet.Workbook.CreateCellStyle();
-
-            // Копирование свойств стиля
             newCellStyle.CloneStyleFrom(copyStyle);
 
-            // Копирование шрифта
-            IFont sourceFont = copyCell.Sheet.Workbook.GetFontAt(copyStyle.FontIndex);
+            IFont copyFont = copyCell.Sheet.Workbook.GetFontAt(copyStyle.FontIndex);
             IFont newFont = pasteCell.Sheet.Workbook.CreateFont();
+			newFont.CloneStyleFrom(copyFont);
 
-            newFont.Boldweight = sourceFont.Boldweight;
-            newFont.Color = sourceFont.Color;
-            newFont.FontHeightInPoints = sourceFont.FontHeightInPoints;
-            newFont.FontName = sourceFont.FontName;
-            newFont.IsItalic = sourceFont.IsItalic;
-            newFont.IsStrikeout = sourceFont.IsStrikeout;
-            newFont.TypeOffset = sourceFont.TypeOffset;
-            newFont.Underline = sourceFont.Underline;
-            newCellStyle.SetFont(newFont);
-
-            pasteCell.CellStyle = newCellStyle;  // Применяем новый стиль к ячейке pasteCell
+            pasteCell.CellStyle = newCellStyle;
         }
     }
 }
