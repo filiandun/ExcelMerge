@@ -6,16 +6,16 @@
         xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         xmlns:local="clr-namespace:ExcelMerge"
         mc:Ignorable="d"
-        Title="Excel Merger" Height="910" Width="920" WindowStartupLocation="CenterScreen" GlowBrush="{DynamicResource MahApps.Brushes.Accent}" Closed="MainWindow_Closed">
+        Title="Excel Merger" Height="910" Width="920" WindowStartupLocation="CenterScreen" GlowBrush="{DynamicResource MahApps.Brushes.Accent}" Closed="MainWindow_Closed" Loaded="MetroWindow_Loaded">
 
     <Grid Margin="10px">
         <Grid.RowDefinitions>
             <RowDefinition Height="7*"/>
             <RowDefinition Height="1.2*"/>
-            <RowDefinition Height="*" MinHeight="150"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="0.7*"/>
         </Grid.RowDefinitions>
-        
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
@@ -30,11 +30,32 @@
                     <RowDefinition Height="1.4*"/>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
-                
-                <StackPanel Grid.Row="0" Margin="10">
-                    <Button x:Name="btnOpenFile1" Tag="1" Content="Выбрать первый файл Excel" Click="BtnOpenFile_Click"/>
-                    <TextBlock x:Name="txtFile1" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
-                </StackPanel>
+
+                <Grid Grid.Row="0" Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.8*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnOpenFile1" Grid.Row="0" Grid.Column="0" Tag="1" Content="Выбрать первый файл Excel" Click="BtnOpenFile_Click"/>
+                    <Button x:Name="btnReloadFile1" Grid.Row="0" Grid.Column="1" Tag="1" Click="BtnReloadFile_Click">
+                        <Button.Content>
+                            <Image Source="/Properties/Icons/reload icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="btnShowFile1" Grid.Row="0" Grid.Column="2" Tag="1" Padding="0" Click="BtnShowFile_Click">
+                        <Button.Content>
+                            <Image Source="/Properties/Icons/show icon.png" Height="25" Width="25" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Button.Content>
+                    </Button>
+                    <TextBlock x:Name="txtFile1" Grid.Row="1" Grid.ColumnSpan="3" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
+                </Grid>
 
                 <GroupBox Header="Выберите лист из первого файла" Grid.Row="1" Margin="5" Padding="5" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
                     <StackPanel>
@@ -53,7 +74,7 @@
                 <GroupBox Header="Выберите столбец для сравнения из листа первого файла" Grid.Row="3" Margin="5" Padding="4" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
                     <StackPanel>
                         <ComboBox x:Name="cmbColumn1" Tag="1" DropDownOpened="CmbColumn_DropDownOpened"/>
-                        
+
                         <StackPanel Margin="10">
                             <CheckBox x:Name="cbIgnoreEmptyCells" Content="Пропускать пустые ячейки при сравнении" IsChecked="True" Margin="0 0 0 5"/>
                             <CheckBox x:Name="cbYellowBackground" Content="Подкрасить пустые ячейки в жёлтый" Margin="0 0 0 5"/>
@@ -84,11 +105,32 @@
                     <RowDefinition Height="1.3*"/>
                     <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
-                
-                <StackPanel Grid.Row="0" Margin="10">
-                    <Button x:Name="btnOpenFile2" Tag="2" Content="Выбрать второй файл Excel" Click="BtnOpenFile_Click"/>
-                    <TextBlock x:Name="txtFile2" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
-                </StackPanel>
+
+                <Grid Grid.Row="0" Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.8*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnOpenFile2" Grid.Row="0" Grid.Column="0" Tag="2" Content="Выбрать первый файл Excel" Click="BtnOpenFile_Click"/>
+                    <Button x:Name="btnReloadFile2" Grid.Row="0" Grid.Column="1" Tag="2" Click="BtnReloadFile_Click">
+                        <Button.Content>
+                            <Image Source="/Properties/Icons/Reload icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="btnShowFile2" Grid.Row="0" Grid.Column="2" Tag="2" Padding="0" Click="BtnShowFile_Click">
+                        <Button.Content>
+                            <Image Source="/Properties/Icons/show icon.png" Height="25" Width="25" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        </Button.Content>
+                    </Button>
+                    <TextBlock x:Name="txtFile2" Grid.Row="1" Grid.ColumnSpan="3" Text="Файл не выбран" Margin="5" TextWrapping="Wrap"/>
+                </Grid>
 
                 <GroupBox Header="Выберите лист из второго файла" Grid.Row="1" Margin="5" Padding="5" Style="{DynamicResource MahApps.Styles.GroupBox.Clean}">
                     <StackPanel>

@@ -9,8 +9,33 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Properties\Icons\reload icon.png" />
+    <None Remove="Properties\Icons\show icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="NPOI" Version="2.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Properties\Icons\reload icon.png" />
+    <Resource Include="Properties\Icons\show icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

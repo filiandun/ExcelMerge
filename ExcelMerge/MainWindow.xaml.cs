@@ -6,6 +6,7 @@ using System.IO;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using System.Windows.Documents;
+using NPOI.OpenXmlFormats.Spreadsheet;
 
 
 namespace ExcelMerge
@@ -25,12 +26,24 @@ namespace ExcelMerge
             this.excelManager2 = new ExcelManager();
 
             this.comparisonHelper = new ComparisonHelper();
-            this.comparisonHelper.ProgressChanged += ComparsionHelper_ProgressChanged;
-
-            this.ShowMessageAsync("Внимание!", "Перед использованием программы рекомендуется создать копии файлов, с которыми будете работать!");
+            this.comparisonHelper.ProgressChanged += ComparsionHelper_ProgressChanged;    
         }
 
-        private void BtnOpenFile_Click(object sender, RoutedEventArgs e)
+
+        private async void MetroWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!Properties.Settings.Default.DoNotShowWarning)
+            {
+                var messageDialogResult = await this.ShowMessageAsync("Внимание!", "Перед использованием программы рекомендуется создать копии файлов, с которыми будете работать!", MessageDialogStyle.AffirmativeAndNegative, new MetroDialogSettings() { NegativeButtonText = "Больше не показывать" });
+                if (messageDialogResult == MessageDialogResult.Negative)
+                {
+                    Properties.Settings.Default.DoNotShowWarning = true;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
+
+        private async void BtnOpenFile_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog()
             {
@@ -47,25 +60,117 @@ namespace ExcelMerge
                     if (fileNum == 1)
                     {
                         this.ResetAllComponent(this.txtFile1, this.cmbSheet1, this.cmbColumn1, this.cmbPasteColumn1, this.txtRowColumnCountSheet1, this.nupRowWithColumnNames1);
-                        this.LoadFile(this.excelManager1, fileInfo, this.txtFile1, this.cmbSheet1);
+                        await this.LoadFile(this.excelManager1, fileInfo, this.txtFile1, this.cmbSheet1);
                     }
                     else if (fileNum == 2)
                     {
                         this.ResetAllComponent(this.txtFile2, this.cmbSheet2, this.cmbColumn2, this.cmbCopyColumn2, this.txtRowColumnCountSheet2, this.nupRowWithColumnNames2);
-                        this.LoadFile(this.excelManager2, fileInfo, this.txtFile2, this.cmbSheet2);
+                        await this.LoadFile(this.excelManager2, fileInfo, this.txtFile2, this.cmbSheet2);
                     }
                 }
             }
         }
 
-        private async void LoadFile(ExcelManager excelHelper, FileInfo fileInfo, TextBlock txtFile, ComboBox cmbSheet)
+        private async void BtnReloadFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btnReloadFile)
+            {
+                int fileNum = Convert.ToInt32(btnReloadFile.Tag);
+                if (fileNum == 1)
+                {
+                    await this.ReloadFile(this.excelManager1, this.cmbSheet1, this.cmbColumn1, this.cmbPasteColumn1, this.txtRowColumnCountSheet1, this.nupRowWithColumnNames1);
+                }
+                else if (fileNum == 2)
+                {
+                    await this.ReloadFile(this.excelManager2, this.cmbSheet2, this.cmbColumn2, this.cmbCopyColumn2, this.txtRowColumnCountSheet2, this.nupRowWithColumnNames2);
+                }
+            }
+        }
+
+        public async Task ReloadFile(ExcelManager excelManager, ComboBox cmbSheet, ComboBox cmbColumn, ComboBox cmbPasteOrCopyColumn, TextBlock txtRowColumnCountSheet, NumericUpDown nupRowWithColumnNames)
         {
             try
             {
-                excelHelper.OpenExcelFile(fileInfo);
+                // ПЕРЕОТКРЫТИЕ ФАЙЛА
+                excelManager.ReloadExcelFile();
+
+                string? selectedColumnName = cmbColumn.SelectedItem as string ?? null; // нужно взять заранее, иначе в перезагрузке листа сбросится выбранный столбец
+                string? selectedColumnName2 = cmbPasteOrCopyColumn.SelectedItem as string ?? null; // нужно взять заранее, иначе в перезагрузке листа сбросится выбранный столбец
+
+                // ПЕРЕЗАГРУЗКА ЛИСТА
+                string? selectedSheetName = cmbSheet.SelectedItem as string ?? null;
+                if (selectedSheetName != null)
+                {
+                    txtRowColumnCountSheet.Text = "Лист не выбран";
+
+                    cmbSheet.ItemsSource = excelManager.GetSheetNames();
+
+                    cmbSheet.SelectedItem = null; // чтобы вызвать selectionChanged
+                    cmbSheet.SelectedItem = selectedSheetName;
+                }
+
+                // ПЕРЕЗАГРУЗКА СТОЛБЦОВ
+                if (selectedColumnName != null)
+                {
+                    await LoadColumns(excelManager, cmbColumn, cmbPasteOrCopyColumn, nupRowWithColumnNames);
+
+                    cmbColumn.SelectedItem = selectedColumnName;
+                    cmbPasteOrCopyColumn.SelectedItem = selectedColumnName2;
+                }
+            }
+            catch (ArgumentNullException)
+            {
+                await this.ShowMessageAsync("Внимание!", "Выберите файл, прежде чем его обновить!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка при просмотре Excel файла", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void BtnShowFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btnShowFile)
+            {
+                int fileNum = Convert.ToInt32(btnShowFile.Tag);
+
+                if (fileNum == 1)
+                {
+                    await this.ShowTableWindow(this.excelManager1);
+                }
+                else if (fileNum == 2)
+                {
+                    await this.ShowTableWindow(this.excelManager2);
+                }
+            }
+        }
+
+        private async Task ShowTableWindow(ExcelManager excelManager)
+        {
+            try
+            {
+                ShowTableWindow showTableWindow = new ShowTableWindow(excelManager);
+                showTableWindow.ShowDialog();
+            }
+            catch (NullReferenceException)
+            {
+                await this.ShowMessageAsync("Внимание!", "Выберите файл, прежде чем его просмотреть!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка при просмотре Excel файла", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private async Task LoadFile(ExcelManager excelManager, FileInfo fileInfo, TextBlock txtFile, ComboBox cmbSheet)
+        {
+            try
+            {
+                excelManager.OpenExcelFile(fileInfo);
                 txtFile.Text = $"Выбранный файл: {fileInfo.Name} ({fileInfo.FullName})";
 
-                cmbSheet.ItemsSource = excelHelper.GetSheetNames();
+                cmbSheet.ItemsSource = excelManager.GetSheetNames();
             }
             catch (IOException)
             {
@@ -98,13 +203,14 @@ namespace ExcelMerge
             }
         }
 
-        private void LoadSheetInfo(ExcelManager excelHelper, string sheetName, TextBlock txtRowColumnCountSheet)
+        private void LoadSheetInfo(ExcelManager excelManager, string sheetName, TextBlock txtRowColumnCountSheet)
         {
             try
             {
-                int[] rowAndColumnCounts = excelHelper.GetSheetInfo(sheetName);
+                int columnCount = excelManager.GetSheetColumnCount(sheetName);
+                int rowCount = excelManager.GetSheetRowCount(sheetName);
 
-                txtRowColumnCountSheet.Text = $"Строк: {rowAndColumnCounts[0]}\tСтолбцов: {rowAndColumnCounts[1]}";
+                txtRowColumnCountSheet.Text = $"Строк: {rowCount}\tСтолбцов: {columnCount}";
             }
             catch (Exception ex)
             {
@@ -120,7 +226,7 @@ namespace ExcelMerge
 			}
 		}
 
-		private void BtnCreateColumnNames_Click(object sender, RoutedEventArgs e)
+		private async void BtnCreateColumnNames_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btnCreateColumnNames)
             {
@@ -128,16 +234,16 @@ namespace ExcelMerge
 
                 if (fileNum == 1)
                 {
-                    this.CreateColumnNames(this.excelManager1);
+                    await this.CreateColumnNames(this.excelManager1);
                 }
                 else if (fileNum == 2)
                 {
-                    this.CreateColumnNames(this.excelManager2);
+                    await this.CreateColumnNames(this.excelManager2);
                 }
             }
         }
 
-		private async void CreateColumnNames(ExcelManager excelManager)
+		private async Task CreateColumnNames(ExcelManager excelManager)
 		{
 			try
 			{
@@ -156,7 +262,7 @@ namespace ExcelMerge
 
 
 
-		private void CmbColumn_DropDownOpened(object sender, EventArgs e)
+		private async void CmbColumn_DropDownOpened(object sender, EventArgs e)
 		{
 			if (sender is ComboBox сmbColumn)
 			{
@@ -164,23 +270,23 @@ namespace ExcelMerge
 
 				if (fileNum == 1)
 				{
-					this.LoadColumns(this.excelManager1, this.cmbColumn1, this.cmbPasteColumn1, this.nupRowWithColumnNames1);
+					await this.LoadColumns(this.excelManager1, this.cmbColumn1, this.cmbPasteColumn1, this.nupRowWithColumnNames1);
 				}
 				else if (fileNum == 2)
 				{
-			        this.LoadColumns(this.excelManager2, this.cmbColumn2, this.cmbCopyColumn2, this.nupRowWithColumnNames2);
+                    await this.LoadColumns(this.excelManager2, this.cmbColumn2, this.cmbCopyColumn2, this.nupRowWithColumnNames2);
 				}
 			}
 		}
 
-        private async void LoadColumns(ExcelManager excelHelper, ComboBox cmbColumn, ComboBox cmbPasteOrCopyColumn, NumericUpDown nupRowWithColumnNames)
+        private async Task LoadColumns(ExcelManager excelManager, ComboBox cmbColumn, ComboBox cmbPasteOrCopyColumn, NumericUpDown nupRowWithColumnNames)
         {
             List<string> columnNames = new List<string>();
 
             try
             {
                 double? rowNum = nupRowWithColumnNames.Value - 1;
-				columnNames = excelHelper.GetColumnNames(rowNum);
+				columnNames = excelManager.GetColumnNames(rowNum);
             }
             catch (NullReferenceException)
             {
@@ -193,7 +299,7 @@ namespace ExcelMerge
             finally
             {
                 cmbColumn.ItemsSource = columnNames;
-                cmbPasteOrCopyColumn.ItemsSource = columnNames;
+                cmbPasteOrCopyColumn.ItemsSource = columnNames.Append("[вставить в новый столбец]");
             }
         }
 
@@ -289,10 +395,11 @@ namespace ExcelMerge
 			cmbPasteOrCopyColumn.ItemsSource = null;
 		}
 
+
 		private void MainWindow_Closed(object sender, EventArgs e)
         {
             this.excelManager1.Close();
             this.excelManager2.Close();
 		}
-	}
+    }
 }

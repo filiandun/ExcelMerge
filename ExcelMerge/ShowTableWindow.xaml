@@ -1,0 +1,63 @@
+﻿<mah:MetroWindow x:Class="ExcelMerge.ShowTableWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        xmlns:local="clr-namespace:ExcelMerge"
+        mc:Ignorable="d"
+        Title="Просмотр таблицы" Height="450" Width="800" Loaded="Window_Loaded">
+    
+    <Window.Resources>
+        <!-- Стиль для всех строк таблицы-->
+        <Style TargetType="DataGridRow">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- Стиль для заголовков столбцов с номерами столбцов (A, B .. AA, AB.. AAA, AAB.. -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Padding" Value="10"/>
+
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+
+            <Setter Property="Background" Value="#FF3393DF"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="0.3"/>
+        </Style>
+
+        <!-- Стиль для ячеек с номерами строк (1, 2 ...) -->
+        <Style x:Key="FirstColumn" TargetType="DataGridCell">
+            <Setter Property="Padding" Value="10"/>
+
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+
+            <Setter Property="Background" Value="#FF3393DF"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="0.3"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="5">
+            <TextBlock Text="Выберите лист для просмотра:" Margin="5"/>
+            <ComboBox x:Name="cmdSheet" Grid.Row="0" SelectionChanged="cmdSheet_SelectionChanged"/>
+        </StackPanel>
+        <DataGrid x:Name="dataGrid" Grid.Row="1" HeadersVisibility="All" GridLinesVisibility="All" IsReadOnly="True"/>
+    </Grid>
+</mah:MetroWindow>

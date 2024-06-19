@@ -1,10 +1,8 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Data;
+using System.IO;
 
 using NPOI.HSSF.UserModel;
-using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
-using NPOI.XSSF.Streaming;
 using NPOI.XSSF.UserModel;
 
 
@@ -13,10 +11,9 @@ namespace ExcelMerge
     public class ExcelManager
     {
         private IWorkbook? workBook;
-        private FileInfo fileInfo;
+        private FileInfo? fileInfo;
 
         public ISheet? Sheet { get; private set; }
-
 
         public void OpenExcelFile(FileInfo fileInfo)
         {
@@ -39,6 +36,11 @@ namespace ExcelMerge
             }
         }
 
+        public void ReloadExcelFile()
+        {
+            this.OpenExcelFile(this.fileInfo ?? throw new ArgumentNullException());
+        }
+
         public void SaveExcelFile()
         {
             using (FileStream fileStream = new FileStream(this.fileInfo.FullName, FileMode.Create, FileAccess.Write))
@@ -52,6 +54,52 @@ namespace ExcelMerge
             this.workBook?.Close();
         }
 
+        public async Task<DataTable> GetTable(string sheetName)
+        {
+            DataTable dataTable = new DataTable();
+
+            if (this.workBook == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            await Task.Run(() =>
+            {
+                using (FileStream fileStream = new FileStream(this.fileInfo.FullName, FileMode.Open, FileAccess.Read))
+                {
+                    IWorkbook workbook = new XSSFWorkbook(fileStream);
+                    ISheet sheet = workbook.GetSheetAt(0);
+
+                    IRow firstRow = sheet.GetRow(0);
+                    int columnCount = this.GetSheetColumnCount(sheetName);
+
+                    dataTable.Columns.Add("№");
+                    for (int i = 0; i < columnCount; i++)
+                    {
+                        dataTable.Columns.Add(GetColumnNum(i + 1));
+                    }
+
+                    for (int i = 0; i <= sheet.LastRowNum; i++)
+                    {
+                        IRow row = sheet.GetRow(i);
+                        if (row == null) { continue; }
+
+                        DataRow dr = dataTable.NewRow();
+
+                        dr[0] = $"{i + 1}";
+
+                        for (int j = 0; j < columnCount; j++)
+                        {
+                            dr[j + 1] = row?.GetCell(j)?.ToString() ?? string.Empty;
+                        }
+
+                        dataTable.Rows.Add(dr);
+                    }
+                }
+            });
+
+            return dataTable;
+        }
 
 
         public List<string> GetSheetNames()
@@ -67,7 +115,7 @@ namespace ExcelMerge
             return sheetNames;
         }
 
-        public int[] GetSheetInfo(string sheetName)
+        public int GetSheetColumnCount(string sheetName)
         {
             ISheet sheet = this.workBook.GetSheet(sheetName);
             if (sheet == null)
@@ -76,8 +124,6 @@ namespace ExcelMerge
             }
 
             this.Sheet = sheet;
-
-            int rowCount = sheet.LastRowNum + 1;
 
             int columnCount = 0;
             for (int i = 0; i < sheet.LastRowNum; i++)
@@ -90,7 +136,21 @@ namespace ExcelMerge
                 }
             }
 
-            return new int[2] { rowCount, columnCount };
+            return columnCount;
+        }
+
+        public int GetSheetRowCount(string sheetName)
+        {
+            ISheet sheet = this.workBook.GetSheet(sheetName);
+            if (sheet == null)
+            {
+                throw new InvalidOperationException($"Выбранный лист ({sheetName}) не существует!");
+            }
+            this.Sheet = sheet;
+
+            int rowCount = sheet.LastRowNum + 1;
+
+            return rowCount;
         }
 
 
@@ -123,11 +183,29 @@ namespace ExcelMerge
             for (int i = 0; i < columnCount; i++)
             {
                 ICell cell = row.GetCell(i, MissingCellPolicy.RETURN_BLANK_AS_NULL);
-                string columnName = $"[{i + 1}] " + (cell != null ? cell.ToString() : "Пустота");
+
+                string columnNum = $"№{i + 1} [{GetColumnNum(i + 1)}] ";
+                string columnName = columnNum + (cell?.ToString() ?? "Пустота");
+
                 columnNames.Add(columnName);
             }
 
             return columnNames;
+        }
+
+        private string GetColumnNum(int num)
+        {
+            string str = "";
+
+            while (num > 0)
+            {
+                num--;
+                int remainder = num % 26;
+                str = (char)(remainder + 65) + str;
+                num /= 26;
+            }
+
+            return str;
         }
 
 
